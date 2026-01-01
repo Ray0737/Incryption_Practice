@@ -3,7 +3,7 @@ Side Project
 
 ## Project Details:
 
-Practicing in decrypting and encrypting data.
+Practicing in decrypting and encrypting data. 
 
 ---
 
@@ -11,7 +11,7 @@ Practicing in decrypting and encrypting data.
 
 | Detail | Value |
 | :--- | :--- |
-| **Tools** | RSA |
+| **Tools** | Cryptography Module |
 | **Purpose** | For fun |
 | **Current Version** | 1.0.0 |
 | **Latest Edit** | January 1, 2026 |
