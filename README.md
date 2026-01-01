@@ -3,7 +3,7 @@ Side Project
 
 ## Project Details:
 
-Practicing in decrypting and encrypting data for Capture The Flag competition.
+This code is dedicated to my senior (p'View). I created this code as way to prank my senior buddy in return and to practicing in decrypting and encrypting data for Capture The Flag competition.
 
 ---
 
@@ -11,7 +11,7 @@ Practicing in decrypting and encrypting data for Capture The Flag competition.
 
 | Detail | Value |
 | :--- | :--- |
-| **Tools** | Cryptography Module |
+| **Tools** | Cryptography, Hashlib, and Base 64 Module |
 | **Purpose** | For fun |
 | **Current Version** | 1.0.0 |
 | **Latest Edit** | January 1, 2026 |
