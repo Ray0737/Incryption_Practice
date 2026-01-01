@@ -3,7 +3,7 @@ Side Project
 
 ## Project Details:
 
-Practicing in decrypting and encrypting data. 
+Practicing in decrypting and encrypting data for Capture The Flag competition.
 
 ---
 
