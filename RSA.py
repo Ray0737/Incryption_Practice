@@ -9,13 +9,13 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 DATA_FILE = "log.json"
 STATIC_SALT = "a_secure_static_salt_for_this_demo"
 
-# Global storage for the demo (In a real app, these would be saved to files)
 private_key = None
 public_key = None
 encrypted_session_key = None
 iv = None
 encrypted_message = None
 
+# JSON File System
 def load_users():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r') as f:
