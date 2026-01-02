@@ -1,81 +1,141 @@
+import os
 import base64
+import hashlib
+import json
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-def secret_print(encoded):
-    decoded = base64.b64decode(encoded).decode('utf-8')
-    print(decoded)
+DATA_FILE = "log.json"
+STATIC_SALT = "a_secure_static_salt_for_this_demo"
 
-def step1():
-    print("Step 1: Decode this thing (ヒント: 🥚):")
-    secret = [68, 117, 99, 107, 32, 101, 103, 103, 115] 
-    result = ''.join(chr(c) for c in secret)
-    guess = input("So... what's the magic word? ").strip() #Ans: Duck eggs
-    if guess.lower() == result.lower():
-        secret_print(b'8J+SqPCfkqTigJxPaG9ob35Db3JyZWN0ISBZb3UndmUgc21hcnRlciB0aGFuIHlvdSBsb29rIPCfmLkK\n')
-        return True
-    else:
-        secret_print(b'8J+PiCDigJwgT29wcy4gVGhhdCBhaW4ndCBpdC4gR28gY3J5IGFuZCB0cnkgYWdhaW4u')
+private_key = None
+public_key = None
+encrypted_session_key = None
+iv = None
+encrypted_message = None
+
+def load_users():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, 'r') as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
+    return {}
+
+def save_users(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
+
+users = load_users()
+
+def hash_sha256(password: str) -> str:
+    salted_password = STATIC_SALT + password
+    return hashlib.sha256(salted_password.encode('utf-8')).hexdigest()
+
+def incrypting_RSA(message_text):
+    global private_key, public_key, encrypted_session_key, iv, encrypted_message
+    
+    # 1. Generate RSA Keys
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key()
+    
+    # 2. Setup AES Session Key
+    session_key = os.urandom(32) 
+    iv = os.urandom(16) 
+    
+    # 3. AES Encryption
+    cipher = Cipher(algorithms.AES(session_key), modes.CFB(iv))
+    encryptor = cipher.encryptor()
+    encrypted_message = encryptor.update(message_text.encode()) + encryptor.finalize()
+    
+    # 4. RSA Encrypt the Session Key
+    encrypted_session_key = public_key.encrypt(
+        session_key,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return encrypted_message.hex()
+
+def decrpting_RSA():
+    # 1. RSA Decrypt the Session Key
+    decrypted_session_key = private_key.decrypt(
+        encrypted_session_key,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    
+    # 2. AES Decrypt the Message
+    decryptor = Cipher(algorithms.AES(decrypted_session_key), modes.CFB(iv)).decryptor() 
+    original_message = decryptor.update(encrypted_message) + decryptor.finalize()
+    
+    return original_message.decode()
+
+def encode_b64(text):
+    text_bytes = text.encode("utf-8")
+    b64_bytes = base64.b64encode(text_bytes)
+    return b64_bytes.decode("utf-8")
+
+def decode_b64(b64_text):
+    b64_bytes = b64_text.encode("utf-8")
+    text_bytes = base64.b64decode(b64_bytes)
+    return text_bytes.decode("utf-8")
+
+def register():
+    username = input("Enter a new username: ")
+    user_key = hash_sha256(username)
+    
+    if user_key in users:
+        print("Username already exists.")
         return False
-
-def step2():
-    print("Step 2: Here's some fossil clues for ya 🍗")
-
-    encoded_hints = [
-        b'SSdtIHdoaXRlIGxpa2UgbGF1bmRyeSBwb3dkZXIu',
-        b'SSBraW5kYSBsb29rIGxpa2UgY2hvcHN0aWNrcy4=',
-        b'SSdtIGFzIHRhbGwgYXMgdW5lIGFuZCBhIGhhbGYgbWluaW9uICh5ZXMsIEkgbWVhc3VyZWQpLg==',
-        b'UGh5c2ljcz8gTmFoLCBub3QgbXkgdGhpbmcu',
-        b'SSBnaXZlIGJvaWxlZCBlZ2cgZW5lcmd5Lg==',
-        b'TXkgbmFtZT8gVGhpbmsgb2YgdGhhdCBtb3VudGFpbiBwaWMgSSBvbmNlIHNlbnQgeW91Lg==',
-        b'SSBIYXZlIGEgdGhpbmcgZm9yIFN0YXJidWNrcyBtYXRjaGEu',
-        b'VGJoLCBhIGxvdCBvZiB5b3VyIGd1ZXNzZXMgYWJvdXQgbWUgd2VyZSBzcG90IG9uLg=='
-    ]
-
-    for i, e in enumerate(encoded_hints, 1):
-        hint = base64.b64decode(e).decode()
-        print(f"{i}. {hint}")
-
-    input("\n(Press Enter when you're done giggling at my clues 😌)\n")
+    
+    password = input("Enter a password: ")
+    users[user_key] = {
+        "password": hash_sha256(password),
+        "secret": [] 
+    }
+    save_users(users)
+    print(f"User '{username}' registered successfully!")
     return True
 
-def caesar_decrypt(text, shift):
-    result = ''
-    for c in text:
-        if c.islower():
-            result += chr((ord(c) - shift - 97) % 26 + 97)
-        elif c.isupper():
-            result += chr((ord(c) - shift - 65) % 26 + 65)
+def login():
+    while True:
+        username = input("Enter your username: ")
+        user_key = hash_sha256(username)
+        
+        if user_key in users:
+            password = input("Enter your password: ")
+            if users[user_key]["password"] == hash_sha256(password):
+                print(f"\nWelcome, {username}!")
+                
+                msg1 = input("Enter secret: ")
+                msg2 = incrypting_RSA(msg1)
+                msg3 = encode_b64(msg2)
+                
+                msg4 = decode_b64(msg3)
+                msg5 = decrpting_RSA()
+
+                users[user_key]["secret"].append(msg3)
+                save_users(users)
+                print(f"Sent: {msg3}")
+                print(f"Decrypted: {msg5}")
+                break
+            else:
+                print("\033[31mIncorrect Password\033[0m\n")
         else:
-            result += c
-    return result
+            print(f"User '{username}' not found.")
+            if register():
+                break
 
-def step3():
-    print("Step 3: Decode this mysterious password (ヒント: 🍜):")
-    encrypted = "Fkrsvwlfnv"
-    guess = input(f"Decode this word: {encrypted} → ").strip() #ANS = chopsticks
-    correct = caesar_decrypt(encrypted, 3)
-    if guess.lower() == correct.lower():
-        secret_print(b'8J+SqPCfkqEiIFdob2F+IE5haWxlZCBpdCEgWW91J3JlIG9mZmljaWFsbHkgYSBub29kbGUgbWFzdGVyIPCfmI0K\n')
-        return True
-    else:
-        secret_print(b'8J+YnyDjgYzwn42QIENsb3NlLi4uIGJ1dCBubyByYW1lbiBmb3IgeW91IHlldC4=')
-        return False
 
-def step4():
-    secret_print(b'8J+olCBXb2FoISBZb3XigJ92ZSB1bmxvY2tlZCB0aGUgc3VwZXItc2VjcmV0IGZpbmFsZSDwn4eUIEJyYWNlIHlvdXJzZWxmIQ==')
-
-    final_msg = base64.b64decode(
-        b'SSDigJlzIGluIHRoZSB3YXJtLWNvbG9yIHRlYW0sIG15IG51bWJlcuKAmXMgYSBzaW5nbGUgZGlnaXQsIHdoaXRlIHNuZWFrZXJzIG9uIHBvaW50IC0tIGFuZCB5ZXAsIEkndmUgc2VlbiB5b3VyIGZhY2UgYmVmb3JlIPCfkKk='
-    ).decode()
-
-    note = base64.b64decode(
-        b'U2F2ZSB0aGlzIG9yIHlvdSdsbCBoYXZlIHRvIHJ1biBpdCBhbGwgb3ZlciBhZ2Fpbj4gU2VlIHlvdSB0b21vcnJvdyEgSSdsbCBiZSB3YXRjaGluZyB0byBzZWUgaWYgeW91IGNhbiBmaW5kIG1lLiBHb29kIGx1Y2ssIGxpbCBvbmUg8J+Ypw=='
-    ).decode()
-
-    print(f"✨ Message: '{final_msg}'")
-    print(f"P.S. {note}")
-
-if __name__ == "__main__":
-    if step1():
-        if step2():
-            if step3():
-                step4()
+if __name__ == '__main__':
+    running = input("Start program? (y/n): ").strip().lower()
+    if running == 'y':
+        login()
