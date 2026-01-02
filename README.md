@@ -18,6 +18,17 @@ This code is dedicated to my senior (p'View). I created this code as way to pran
 
 ---
 
+## Additional Notes:
+
+| Module | Type | Reversible | Key Type | Best Use Case | 
+| :--- | :--- | :--- | :--- | :--- |
+| **Base 64** | Encoding | Y | N/A | Binary to Text transfer |
+| **Hash + Salt** | Hashing | N | N/A (Salt) | Password Storage |
+| **RSA** | Asymmetric | Y | Public-Private | Key exchange |
+| **AES (ECB)** | Symmetric | Y | Secret Key | Small random Ddata |
+
+---
+
 ## ⚠️ Deployment Note:
 
 This code will output the result in the terminal only.
