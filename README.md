@@ -23,10 +23,10 @@ This code is dedicated to my senior (p'View). I created this code as way to pran
 
 | Module | Algorithm | Reversible | Strength | Role |
 | :--- | :--- | :--- | :--- | :--- |
-| **KDF** | **Argon2id** | No | 🔒🔒🔒🔒🔒 | Secure user password hashing |
-| **Asymmetric** | **RSA-3072** | Yes | 🔒🔒🔒🔒 | Encrypts/Decrypts the AES Session Keys |
-| **Symmetric** | **AES-256 GCM** | Yes | 🔒🔒🔒🔒🔒 | Encrypts the actual secret data (Authenticated) |
-| **Persistence** | **PKCS8 PEM** | Yes | 🔒🔒🔒 | RSA Private Key stored with Master Password |
+| **KDF** | **Argon2id** | No | v | Secure user password hashing |
+| **Asymmetric** | **RSA-3072** | Yes | iv | Encrypts/Decrypts the AES Session Keys |
+| **Symmetric** | **AES-256 GCM** | Yes | v | Encrypts the actual secret data (Authenticated) |
+| **Persistence** | **PKCS8 PEM** | Yes | iii | RSA Private Key stored with Master Password |
 
 ---
 
