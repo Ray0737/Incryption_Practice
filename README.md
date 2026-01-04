@@ -62,6 +62,7 @@ Common mistake in CTFs: Confusing **Base64** with encryption.
 ### 1. Install Dependencies
 ```bash
 pip install cryptography argon2-cffi
+pip install python-pkcs11
 ```
 ---
 
