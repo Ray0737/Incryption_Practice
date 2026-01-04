@@ -12,7 +12,7 @@ from argon2 import exceptions as argon_exceptions
 
 # Configuration
 DATA_FILE = "main_log.json"
-PKCS11_LIB = os.getenv('PKCS11_MODULE', '/usr/local/lib/softhsm/libsofthsm2.so') # Path to your HSM driver
+PKCS11_LIB = os.getenv('PKCS11_MODULE', '/usr/local/lib/softhsm/libsofthsm2.so') # Path to your HSM driver (NON AVIABBLE AT THE MOMENT)
 TOKEN_LABEL = 'MySecurityToken'
 KEY_LABEL = 'VaultMasterKey'
 
@@ -130,4 +130,5 @@ def run_app():
             print("Access Denied.")
 
 if __name__ == "__main__":
+
     run_app()
