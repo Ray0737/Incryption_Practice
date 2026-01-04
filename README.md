@@ -30,6 +30,29 @@ This code is dedicated to my senior (p'View). I created this code as way to pran
 
 ---
 
+## 🧠 Deep Dive: The Logic
+
+### 1. RSA (Asymmetric Encryption)
+RSA is the "Gatekeeper." It uses two keys: a **Public Key** (to lock) and a **Private Key** (to unlock).
+* **The Trapdoor:** It relies on the difficulty of factoring the product of two massive prime numbers.
+* **The Hybrid Approach:** RSA is slow. In this project, we don't encrypt the message with RSA. We encrypt a random **AES Key** with RSA, then use that AES key for the message. This is known as a **Key Encapsulation Mechanism (KEM)**.
+
+
+
+### 2. AES-256 GCM (Symmetric Encryption)
+This is the "Workhorse." AES-256 is the industry standard for bulk data.
+* **GCM Mode:** Unlike older modes (like CBC), **Galois/Counter Mode** provides **AEAD** (Authenticated Encryption with Associated Data). 
+* **The Tag:** It generates a "MAC tag." If an attacker changes even one bit of the encrypted file, the tag check fails, and the code refuses to decrypt. This prevents "Bit-Flipping" attacks often seen in CTFs.
+
+
+
+### 3. Hashlib & Argon2id (Hashing)
+Hashing is a one-way street. You can turn a password into a hash, but you can't turn a hash back into a password.
+* **Argon2id:** This is the winner of the Password Hashing Competition. It is designed to be "Memory-Hard," meaning attackers can't use expensive GPUs to crack your password quickly.
+* **The Salt:** A "Salt" is a random string added to the password before hashing. Even if two users have the same password, their hashes will look completely different. This kills "Rainbow Table" attacks.
+
+---
+
 ## 🔐 The "Double-Lock" Flow
 
 1.  **The Master Lock:** The `private_key.pem` is encrypted on disk. You need a **Master Password** to even load the key into memory.
